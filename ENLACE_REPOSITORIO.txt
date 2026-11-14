@@ -1,0 +1,5 @@
+Evidencia: GA7-220501096-AA2-EV01
+
+Proyecto: Dracarys Gym – Módulo de gestión de socios con Java, JDBC y MySQL
+
+Repositorio: https://github.com/diegoruizlemus777-lgtm/dracarys-gym-jdbc

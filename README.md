@@ -1,83 +1,91 @@
 # DRACARYS GYM — módulo de socios con Java y JDBC
 
-**SENA · Análisis y Desarrollo de Software · GA7-220501096-AA2-EV01**
+**SENA · Análisis y Desarrollo de Software · GA7-220501096-AA2-EV01**  
+**Aprendiz:** Diego Fernando Ruiz Lemus
 
-Proyecto académico: módulo de escritorio para gestionar socios del gimnasio mediante operaciones **CRUD** (insertar, consultar, actualizar y eliminar) sobre **MySQL**, utilizando **JDBC** y `PreparedStatement`.
+Módulo académico de escritorio para administrar socios del gimnasio mediante las operaciones CRUD (insertar, consultar, actualizar y eliminar) con Java Swing, MySQL y JDBC. Las consultas de datos se implementan mediante `PreparedStatement`.
 
 ## Requisitos
 
-- JDK 17 o superior.
-- MySQL Server 8 o superior y MySQL Workbench (opcional).
-- Apache Maven 3.8 o superior.
-- Conexión a internet la primera vez que Maven descargue el conector JDBC.
+- JDK 17 o superior (comprobado con Temurin 21.0.13).
+- MySQL Server 8 o superior; Workbench es opcional para la gestión de la base.
+- Apache Maven (comprobado con Maven 3.10.0).
+- Acceso a internet para la descarga inicial de dependencias Maven.
 
-## 1. Crear base de datos
+## 1. Preparar la base de datos
 
-Ejecute `database/01_crear_base.sql` en MySQL Workbench. El archivo `database/02_datos_demo_opcional.sql` incluye ejemplos ficticios, pero **no es obligatorio**.
+Ejecutar `database/01_crear_base.sql` en MySQL Workbench. El script `database/02_datos_demo_opcional.sql` contiene socios ficticios y es opcional; no ejecutarlo repetidamente porque los documentos son únicos.
 
-## 2. Configurar conexión
+Es recomendable crear un usuario MySQL exclusivo para la aplicación, con permisos `SELECT`, `INSERT`, `UPDATE` y `DELETE` sobre `dracarys_gym`. En la comprobación local se utilizó `dracarys_app`. La aplicación no crea usuarios MySQL automáticamente.
 
-La aplicación utiliza variables de entorno; no requiere modificar el código fuente. Valores por defecto: `DB_HOST=localhost`, `DB_PORT=3306`, `DB_NAME=dracarys_gym`, `DB_USER=root`, `DB_PASSWORD=` vacío. Configure la contraseña real del usuario MySQL local.
+## 2. Configurar la conexión
 
-Ejemplo en PowerShell (Windows), **solo en la terminal actual**:
+Las credenciales se leen de variables de entorno en `ConexionMySql.java`. Si no se definen, el código usa `localhost`, puerto `3306`, base `dracarys_gym`, usuario `root` y contraseña vacía como valores predeterminados. **Para la ejecución comprobada se configuró el usuario `dracarys_app`; no se requiere modificar el código Java.**
+
+PowerShell (Windows), en la terminal desde la que se ejecutará Maven:
 
 ```powershell
-$env:DB_HOST="localhost"
-$env:DB_PORT="3306"
-$env:DB_NAME="dracarys_gym"
-$env:DB_USER="root"
-$env:DB_PASSWORD="TU_CONTRASENA_LOCAL"
+$env:DB_HOST = "localhost"
+$env:DB_PORT = "3306"
+$env:DB_NAME = "dracarys_gym"
+$env:DB_USER = "dracarys_app"
+$env:DB_PASSWORD = Read-Host "Contraseña del usuario MySQL"
 mvn clean compile exec:java
 ```
 
-Ejemplo en Bash/Linux:
+Escribir la contraseña cuando se solicite, sin comillas. `Read-Host` evita introducirla literalmente en el comando, aunque su captura no queda oculta en pantalla. No compartir las credenciales ni publicarlas en GitHub. Si se utiliza otro usuario de MySQL con permisos equivalentes, ajustar `DB_USER` en consecuencia.
 
-```bash
-export DB_USER=root
-export DB_PASSWORD='TU_CONTRASENA_LOCAL'
-mvn clean compile exec:java
-```
+## 3. Funciones
 
-No publique las credenciales. La aplicación usa JDBC a través del controlador `mysql-connector-j` definido en `pom.xml`.
+1. **Insertar:** diligenciar el formulario y seleccionar `Insertar`.
+2. **Consultar:** seleccionar `Mostrar todos` o buscar por nombre, apellido o documento.
+3. **Actualizar:** seleccionar una fila, cambiar los campos y seleccionar `Actualizar`.
+4. **Eliminar:** seleccionar una fila, seleccionar `Eliminar` y confirmar.
+5. **Limpiar:** reiniciar el formulario y la selección.
 
-## 3. Uso
+El documento debe tener entre 5 y 20 dígitos y ser único. El nombre y el apellido son obligatorios. Los planes disponibles son Mensual, Trimestral y Anual.
 
-1. **Insertar:** llene los campos y pulse `Insertar`.
-2. **Consultar:** use `Mostrar todos` o busque por nombre, apellido o documento.
-3. **Actualizar:** seleccione una fila, modifique campos y pulse `Actualizar`.
-4. **Eliminar:** seleccione una fila, pulse `Eliminar` y confirme.
-5. **Limpiar:** borra el formulario y la selección actual.
-
-El campo documento debe tener de 5 a 20 dígitos y no puede duplicarse. Nombre y apellido son obligatorios. Plan permite Mensual, Trimestral o Anual.
-
-## 4. Organización
+## 4. Organización de archivos
 
 ```text
 src/main/java/co/edu/sena/dracarysgym/
-  App.java                 # entrada
+  App.java
   config/ConexionMySql.java
   model/Socio.java
   dao/SocioDao.java
-  dao/SocioDaoJdbc.java    # SQL parametrizado
+  dao/SocioDaoJdbc.java
   service/SocioService.java
-  ui/SocioFrame.java       # interfaz Swing
+  ui/SocioFrame.java
 database/01_crear_base.sql
 database/02_datos_demo_opcional.sql
 docs/artefactos_y_trazabilidad.md
 docs/plan_versionamiento.md
 docs/pruebas_manuales.md
+pom.xml
+ENLACE_REPOSITORIO.txt
 ```
 
-## 5. Estándares de código
+## 5. Convenciones de código
 
-Clases en `PascalCase` (`SocioService`), métodos y variables en `camelCase` (`cargarSocios`), paquetes en minúsculas (`co.edu.sena.dracarysgym.dao`), constantes en `UPPER_SNAKE_CASE` (`COLUMNAS`). Cada consulta usa `PreparedStatement`; los recursos JDBC se cierran mediante `try-with-resources`. La eliminación pide confirmación.
+Clases en `PascalCase`, métodos y variables en `camelCase`, paquetes en minúsculas y constantes en `UPPER_SNAKE_CASE`. El acceso a datos utiliza consultas SQL parametrizadas y cierre de recursos con `try-with-resources`.
 
-## 6. Versionamiento
+## 6. Versionamiento y repositorio
 
-La carpeta del proyecto incluye un repositorio Git inicializado con un commit. Para publicarlo en GitHub consulte `docs/plan_versionamiento.md`. Complete el archivo `../ENLACE_REPOSITORIO.txt` con el enlace **real** después de publicar.
+El proyecto se gestiona con Git y fue publicado en GitHub, rama principal `main`:
 
-## 7. Alcance y límites
+https://github.com/diegoruizlemus777-lgtm/dracarys-gym-jdbc
 
-Esta entrega constituye un **módulo de práctica Java/JDBC independiente**, basado en el dominio de Dracarys Gym. **No** se afirma que ya esté integrado con la aplicación web existente en Node.js ni con sus tablas reales. No implementa autenticación ni permisos de usuarios: por ello debe ejecutarse en un entorno académico controlado y sin datos personales reales. La eliminación es física en la tabla de demostración.
+El archivo `ENLACE_REPOSITORIO.txt` también contiene el enlace. Véase `docs/plan_versionamiento.md` para el estado del repositorio y las recomendaciones de mantenimiento.
 
-**Validación realizada:** compilación del código Java con `javac` (sin conectividad a MySQL). **Pendiente por el aprendiz:** comprobar ejecución contra MySQL y documentar pruebas realizadas.
+## 7. Comprobaciones realizadas
+
+- Compilación Java con Maven: `BUILD SUCCESS` (siete archivos fuente).
+- Ejecución de la interfaz Swing y consulta de socios mediante JDBC: comprobadas.
+- Operaciones de insertar, consultar, actualizar y eliminar: verificadas en el equipo del aprendiz, de acuerdo con su confirmación durante las pruebas.
+- Pruebas adicionales de duplicados, cancelación de eliminación, documento inválido y desconexión: no se registraron como ejecutadas.
+
+Consultar `docs/pruebas_manuales.md` para el detalle de las verificaciones.
+
+## 8. Alcance
+
+Este módulo Java/JDBC es una práctica académica independiente del proyecto web Dracarys Gym desarrollado en HTML, CSS, JavaScript, Node.js y MySQL; no está integrado automáticamente con esa versión. No incorpora autenticación ni autorización de operadores y debe utilizarse en un entorno controlado con datos ficticios. La eliminación de socios es física en la base de demostración.
